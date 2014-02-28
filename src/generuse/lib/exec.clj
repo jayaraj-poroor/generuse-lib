@@ -12,6 +12,10 @@
 	
 )
 
+(defn get-*[map_ key_]
+	(if (map_ key_) (map_ key_) (map_ (keyword key_)))
+)
+
 (defn deref-eval[eval]
 	(if (= (:type eval) :heap-obj) 
 	 	@(:value eval)
