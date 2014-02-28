@@ -9,7 +9,39 @@
 
 (ns generuse.lib.exec
 	(:gen-class)
-	
+	(:import [clojure.lang IPersistentMap])	
+)
+
+(defn basic-type-keyword [t]
+	(condp = t
+		Long 				:int
+		String 				:string
+		Boolean 			:boolean
+		Double  			:float
+		clojure.lang.Ratio  :ratio
+		nil
+	)
+)
+
+(defn classify-type[v]
+	(if (or (string? v) (integer? v) (float? v) (true? v) (false? v) (ratio? v))
+		:primitive
+		(class v)
+	)
+)
+
+(defmulti to-eval classify-type)
+(defmethod to-eval IPersistentMap [v]
+	(apply merge
+		(map
+			#(hash-map (first %) (-> % second to-eval) :type :map :mode "strict")
+			v
+		)
+	)
+)
+
+(defmethod to-eval :primitive [v]
+	{:value v :type (class v)}
 )
 
 (defn get-*[map_ key_]
