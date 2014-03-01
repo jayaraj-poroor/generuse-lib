@@ -33,8 +33,11 @@
 (defmulti to-eval classify-type)
 (defmethod to-eval IPersistentMap [v]
 	(apply merge
-		(map
-			#(hash-map (first %) (-> % second to-eval) :type :map :mode "strict")
+		(map           ;name converts keyword (from sql query) to string
+			#(hash-map (name (first %)) (-> % second to-eval) 
+					   :type :map 
+					   :mode "strict"
+			)
 			v
 		)
 	)
@@ -42,10 +45,6 @@
 
 (defmethod to-eval :primitive [v]
 	{:value v :type (class v)}
-)
-
-(defn get-*[map_ key_]
-	(if (map_ key_) (map_ key_) (map_ (keyword key_)))
 )
 
 (defn deref-eval[eval]
