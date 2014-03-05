@@ -12,6 +12,20 @@
 	(:import [clojure.lang IPersistentMap])	
 )
 
+(defmacro defaxon [target-type names fn-form]
+	(list 'def 
+		  (symbol (str (first names) "_" target-type))		
+		  (list 'with-meta
+		  		(list
+		  			'fn
+		  			['target-eval 'param-evals 'ctx 'globals '& 'more]
+		  			fn-form		  			
+		  		)
+		  		{:axon {:names names :target-type target-type}}
+		  )
+	)
+)
+
 (defn basic-type-keyword [t]
 	(condp = t
 		Long 				:int
