@@ -18,7 +18,11 @@
 		  (list 'with-meta
 		  		(list
 		  			'fn
-		  			['target-eval 'param-evals 'ctx 'globals '& 'more]
+		  			[^IPersistentMap 'target-eval 
+		  			 ^IPersitentMap 'param-evals 
+		  			 ^IPersistentMap 'ctx 
+		  			 ^IPersistentMap 'globals
+		  			]
 		  			fn-form		  			
 		  		)
 		  		{:axon {:names names :target-type target-type}}
