@@ -9,7 +9,9 @@
 
 (ns generuse.lib.exec
 	(:gen-class)
-	(:import [clojure.lang IPersistentMap])	
+	(:import [clojure.lang IPersistentMap IPersistentVector IPersistentList]
+			 [clojure.lang LazySeq IChunkedSeq]
+	)	
 )
 
 (defmacro defaxon [target-type names fn-form]
@@ -25,14 +27,27 @@
 		  			]
 		  			fn-form		  			
 		  		)
-		  		{:axon {:names names :target-type target-type}}
+		  		{:axon {:names names 
+		  			    :target-type (when (not= target-type :any) target-type)
+		  			   }
+		  	    }
 		  )
 	)
 )
 
+(def is-numeric-type? (memoize (fn [t]
+		(or (= t Double ) (= t Long) (= t clojure.lang.Ratio))
+	))
+)
+
+(def is-basic-type? (memoize (fn [t]
+		(or (is-numeric-type? t) (= t Boolean) (= t String))
+	))
+)
+
 (defn basic-type-keyword [t]
 	(condp = t
-		Long 				:int
+		Long 				:integer
 		String 				:string
 		Boolean 			:boolean
 		Double  			:float
@@ -49,16 +64,42 @@
 )
 
 (defmulti to-eval classify-type)
+
 (defmethod to-eval IPersistentMap [v]
-	(apply merge
-		(map           ;name converts keyword (from sql query) to string
-			#(hash-map (name (first %)) (-> % second to-eval) 
-					   :type :map 
-					   :mode "strict"
+	(assoc
+		(apply merge
+			(map           ;name converts keyword (from sql query) to string
+				#(hash-map (name (first %)) (-> % second to-eval))
+				v
 			)
-			v
 		)
+	    :type :map 
+		:mode "strict"
 	)
+)
+
+(defmethod to-eval LazySeq [v]
+	{
+		:value (map #(to-eval %) v)
+		:type :seq
+		:mode "strict"
+	}
+)
+
+(defmethod to-eval IChunkedSeq [v]
+	{
+		:value (map #(to-eval %) v)
+		:type :seq
+		:mode "strict"
+	}
+)
+
+(defmethod to-eval IPersistentVector [v]
+	(to-eval (seq v))
+)
+
+(defmethod to-eval IPersistentList [v]
+	(to-eval (seq v))
 )
 
 (defmethod to-eval :primitive [v]
