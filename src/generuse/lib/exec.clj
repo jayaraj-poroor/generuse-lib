@@ -41,7 +41,7 @@
 )
 
 (def is-basic-type? (memoize (fn [t]
-		(or (is-numeric-type? t) (= t Boolean) (= t String))
+		(or (is-numeric-type? t) (= t Boolean) (= t String) (= :nil t))
 	))
 )
 
@@ -52,6 +52,7 @@
 		Boolean 			:boolean
 		Double  			:float
 		clojure.lang.Ratio  :ratio
+		:nil                :nil
 		nil
 	)
 )
@@ -76,6 +77,13 @@
 	    :type :map 
 		:mode "strict"
 	)
+)
+
+(defmethod to-eval nil [v]
+	{
+		:type 	:nil
+		:value 	nil
+	}
 )
 
 (defmethod to-eval LazySeq [v]
