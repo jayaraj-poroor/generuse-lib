@@ -35,6 +35,13 @@
 	)
 )
 
+(defn is-sys-param [param-name]
+	(let [sys-params #{"if"}		  
+		 ]
+		 (or (keyword? param-name) (sys-params param-name))
+	)
+)
+
 (def is-numeric-type? (memoize (fn [t]
 		(or (= t Double ) (= t Long) (= t clojure.lang.Ratio))
 	))
